@@ -256,7 +256,16 @@
             // Add Wikidata ID cell
             const idCell = document.createElement('td');
             idCell.className = 'wikidata-id';
-            idCell.textContent = wikidataId;
+            const markdownLink = wikidataId.match(/\[(.*?)\]\((.*?)\)/);
+            if (markdownLink) {
+                const a = document.createElement('a');
+                a.href = markdownLink[2];
+                a.textContent = markdownLink[1];
+                a.target = '_blank';
+                idCell.appendChild(a);
+            } else {
+                idCell.textContent = wikidataId;
+            }
             row.appendChild(idCell);
             
             // Add cells for each source
