@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>[Source Name] - Data Source Information</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            color: #333;
+        }
+
+        .header {
+            border-bottom: 2px solid #eee;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+        }
+
+        .navigation {
+            margin-bottom: 2rem;
+        }
+
+        .navigation a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        .navigation a:hover {
+            text-decoration: underline;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin: 0;
+        }
+
+        h2 {
+            color: #34495e;
+            margin-top: 2rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 1px solid #eee;
+        }
+
+        .metadata {
+            background: #f8f9fa;
+            border-radius: 4px;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+
+        .metadata dt {
+            font-weight: bold;
+            margin-top: 0.5rem;
+        }
+
+        .metadata dd {
+            margin-left: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .update-history {
+            list-style: none;
+            padding: 0;
+        }
+
+        .update-history li {
+            margin-bottom: 1rem;
+            padding-left: 1.5rem;
+            position: relative;
+        }
+
+        .update-history li::before {
+            content: "•";
+            position: absolute;
+            left: 0;
+            color: #0066cc;
+        }
+
+        .contact {
+            background: #f0f4f8;
+            padding: 1rem;
+            border-radius: 4px;
+            margin-top: 2rem;
+        }
+
+        code {
+            background: #f5f5f5;
+            padding: 0.2em 0.4em;
+            border-radius: 3px;
+            font-family: monospace;
+        }
+
+        .sample-data {
+            overflow-x: auto;
+            margin: 1rem 0;
+        }
+
+        table {
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+
+        th {
+            background-color: #f8f9fa;
+        }
+
+        .data-notes {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 1rem;
+            margin: 1rem 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <a href="index.html">← Back to Comparison Table</a>
+    </div>
+
+    <div class="header">
+        <h1>[Source Name]</h1>
+    </div>
+
+    <section>
+        <h2>Overview</h2>
+        <p>
+            [Brief description of the source, its purpose, and significance. Explain what kind of data it provides
+            and how it fits into the larger context of your project.]
+        </p>
+    </section>
+
+    <section>
+        <h2>Source Metadata</h2>
+        <dl class="metadata">
+            <dt>Data Provider</dt>
+            <dd>[Organization or entity providing the data]</dd>
+
+            <dt>Update Frequency</dt>
+            <dd>[How often the data is updated]</dd>
+
+            <dt>Coverage</dt>
+            <dd>[Temporal and/or spatial coverage of the data]</dd>
+
+            <dt>Format</dt>
+            <dd>CSV file with Wikidata IDs and corresponding links</dd>
+
+            <dt>License</dt>
+            <dd>[Data usage license and terms]</dd>
+        </dl>
+    </section>
+
+    <section>
+        <h2>Data Format</h2>
+        <p>Each record in this dataset contains:</p>
+        <ul>
+            <li><code>wikidataId</code>: [Description of how Wikidata IDs are used]</li>
+            <li><code>link</code>: [Description of what the links point to and their format]</li>
+        </ul>
+
+        <div class="sample-data">
+            <h3>Sample Data</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>wikidataId</th>
+                        <th>link</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Q12345</td>
+                        <td>https://example.com/entry/12345</td>
+                    </tr>
+                    <tr>
+                        <td>Q67890</td>
+                        <td>https://example.com/entry/67890</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="data-notes">
+            <strong>Note:</strong> [Important information about data interpretation, limitations, or special cases]
+        </div>
+    </section>
+
+    <section>
+        <h2>Update History</h2>
+        <ul class="update-history">
+            <li><strong>2024-03-15</strong>: [Description of most recent update]</li>
+            <li><strong>2024-02-01</strong>: [Description of previous update]</li>
+            <li><strong>2024-01-15</strong>: Initial data import</li>
+        </ul>
+    </section>
+
+    <section>
+        <h2>Data Processing</h2>
+        <p>
+            [Description of any processing, cleaning, or transformation steps applied to the raw data
+            before it appears in the comparison table.]
+        </p>
+    </section>
+
+    <section class="contact">
+        <h2>Contact & Support</h2>
+        <p>
+            For questions about this data source, please contact:
+            [Contact information or link to support resources]
+        </p>
+    </section>
+</body>
+</html>

@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wikidata Source Comparison</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        .controls {
+            margin-bottom: 20px;
+            padding: 10px;
+            background: #f5f5f5;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 8px;
+            text-align: left;
+        }
+        th {
+            background-color: #f8f9fa;
+            cursor: pointer;
+            position: relative;
+            padding-right: 20px;
+        }
+        th:hover {
+            background-color: #e9ecef;
+        }
+        th::after {
+            content: '⇕';
+            position: absolute;
+            right: 8px;
+            opacity: 0.5;
+        }
+        th.asc::after {
+            content: '↑';
+            opacity: 1;
+        }
+        th.desc::after {
+            content: '↓';
+            opacity: 1;
+        }
+        th .source-link {
+            color: inherit;
+            text-decoration: none;
+            border-bottom: 1px dotted #666;
+            display: inline-block;
+            margin-right: 15px; /* Space for sort indicator */
+        }
+        th .source-link:hover {
+            border-bottom-style: solid;
+        }
+        tr:nth-child(even) {
+            background-color: #f9f9f9;
+        }
+        .source-toggle {
+            margin-right: 15px;
+        }
+        .loading {
+            display: none;
+            margin: 20px 0;
+        }
+        .wikidata-id {
+            color: #666;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+    <h1>Wikidata Source Comparison</h1>
+    
+    <div class="controls" id="sourceToggles">
+        <!-- Source toggles will be added here dynamically -->
+    </div>
+    
+    <div class="loading" id="loading">Loading data...</div>
+    <table id="comparisonTable">
+        <thead>
+            <tr id="headerRow">
+                <th data-column="wikidataId">Wikidata ID</th>
+                <!-- Source columns will be added here dynamically -->
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- Data rows will be added here dynamically -->
+        </tbody>
+    </table>
+
+    <script>
+        // Configuration - add your CSV files here
+        const sources = [
+            { name: 'Source 1', file: 'source1.csv', infoPage: 'source1.html' },
+            { name: 'Source 2', file: 'source2.csv', infoPage: 'source2.html' },
+            // Add more sources as needed
+        ];
+
+        let sourceData = {};
+        let wikidataMap = new Map();
+        let currentSort = {
+            column: 'wikidataId',
+            direction: 'asc'
+        };
+
+        // Create toggle controls for each source
+        function createSourceToggles() {
+            const container = document.getElementById('sourceToggles');
+            sources.forEach(source => {
+                const toggle = document.createElement('label');
+                toggle.className = 'source-toggle';
+                toggle.innerHTML = `
+                    <input type="checkbox" checked data-source="${source.name}">
+                    ${source.name}
+                `;
+                toggle.querySelector('input').addEventListener('change', updateTableVisibility);
+                container.appendChild(toggle);
+            });
+        }
+
+        // Initialize column headers
+        function initializeHeaders() {
+            const headerRow = document.getElementById('headerRow');
+            sources.forEach(source => {
+                const th = document.createElement('th');
+                th.dataset.column = source.name;
+                
+                // Create source link
+                const link = document.createElement('a');
+                link.href = source.infoPage;
+                link.className = 'source-link';
+                link.textContent = source.name;
+                th.appendChild(link);
+                
+                // Add click handler for sorting
+                th.addEventListener('click', (e) => {
+                    // Only sort if clicking outside the link
+                    if (e.target === th) {
+                        handleSort(source.name);
+                    }
+                });
+                
+                headerRow.appendChild(th);
+            });
+
+            // Add click handler for Wikidata ID column
+            headerRow.querySelector('th[data-column="wikidataId"]')
+                .addEventListener('click', () => handleSort('wikidataId'));
+        }
+
+        // Handle column sorting
+        function handleSort(column) {
+            const headers = document.querySelectorAll('th');
+            headers.forEach(header => {
+                if (header.dataset.column === column) {
+                    if (currentSort.column === column) {
+                        currentSort.direction = currentSort.direction === 'asc' ? 'desc' : 'asc';
+                        header.classList.toggle('asc', currentSort.direction === 'asc');
+                        header.classList.toggle('desc', currentSort.direction === 'desc');
+                    } else {
+                        currentSort.column = column;
+                        currentSort.direction = 'asc';
+                        header.classList.add('asc');
+                        header.classList.remove('desc');
+                    }
+                } else {
+                    header.classList.remove('asc', 'desc');
+                }
+            });
+            
+            updateTable();
+        }
+
+        // Sort data based on current sort settings
+        function sortData() {
+            const entries = Array.from(wikidataMap.entries());
+            
+            return entries.sort((a, b) => {
+                let valueA, valueB;
+                
+                if (currentSort.column === 'wikidataId') {
+                    valueA = a[0];
+                    valueB = b[0];
+                } else {
+                    valueA = a[1][currentSort.column] || '';
+                    valueB = b[1][currentSort.column] || '';
+                }
+                
+                // Handle empty values
+                if (!valueA) return 1;
+                if (!valueB) return -1;
+                
+                const comparison = valueA.localeCompare(valueB);
+                return currentSort.direction === 'asc' ? comparison : -comparison;
+            });
+        }
+
+        // Load CSV data
+        async function loadData() {
+            document.getElementById('loading').style.display = 'block';
+            
+            for (const source of sources) {
+            try {
+                const response = await fetch(source.file);
+                const csvText = await response.text();
+                
+                Papa.parse(csvText, {
+                complete: (results) => {
+                    processSourceData(source.name, results.data);
+                },
+                header: true
+                });
+            } catch (error) {
+                console.error(`Error loading ${source.file}:`, error);
+            }
+            }
+            
+            document.getElementById('loading').style.display = 'none';
+        }
+
+        // Process data from each source
+        function processSourceData(sourceName, data) {
+            sourceData[sourceName] = data;
+            
+            // Map Wikidata IDs to links
+            data.forEach(row => {
+            if (!wikidataMap.has(row.wikidataId)) {
+                wikidataMap.set(row.wikidataId, {});
+            }
+            wikidataMap.get(row.wikidataId)[sourceName] = row.link;
+            });
+            
+            updateTable();
+        }
+
+        // Update table with current data
+        function updateTable() {
+            const tableBody = document.getElementById('tableBody');
+            tableBody.innerHTML = '';
+            
+            // Sort and create rows
+            const sortedData = sortData();
+            sortedData.forEach(([wikidataId, sourceLinks]) => {
+            const row = document.createElement('tr');
+            
+            // Add Wikidata ID cell
+            const idCell = document.createElement('td');
+            idCell.className = 'wikidata-id';
+            idCell.textContent = wikidataId;
+            row.appendChild(idCell);
+            
+            // Add cells for each source
+            sources.forEach(source => {
+                const cell = document.createElement('td');
+                const link = sourceLinks[source.name];
+                if (link) {
+                const a = document.createElement('a');
+                const markdownLink = link.match(/\[(.*?)\]\((.*?)\)/);
+                if (markdownLink) {
+                    a.href = markdownLink[2];
+                    a.textContent = markdownLink[1];
+                } else {
+                    a.href = link;
+                    a.textContent = link;
+                }
+                a.target = '_blank';
+                cell.appendChild(a);
+                }
+                row.appendChild(cell);
+            });
+            
+            tableBody.appendChild(row);
+            });
+        }
+
+        // Update column visibility based on toggles
+        function updateTableVisibility() {
+            const toggles = document.querySelectorAll('.source-toggle input');
+            const rows = document.querySelectorAll('#comparisonTable tr');
+            
+            toggles.forEach((toggle, index) => {
+                const columnIndex = index + 1; // +1 because of Wikidata ID column
+                rows.forEach(row => {
+                    const cell = row.cells[columnIndex];
+                    if (cell) {
+                        cell.style.display = toggle.checked ? '' : 'none';
+                    }
+                });
+            });
+        }
+
+        // Initialize the page
+        createSourceToggles();
+        initializeHeaders();
+        loadData();
+    </script>
+</body>
+</html>
